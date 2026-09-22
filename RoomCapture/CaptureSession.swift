@@ -541,7 +541,16 @@ final class CaptureSession: NSObject, ObservableObject {
         try audioSession.setCategory(.playAndRecord, mode: .videoRecording, options: [.defaultToSpeaker])
         try audioSession.setActive(true)
 
-        audioFile = try AVAudioFile(forWriting: sessionDirectory.appendingPathComponent("audio.wav"), settings: audioTargetFormat.settings)
+        // Processing format must match the Int16/interleaved buffers handleAudioBuffer()
+        // writes; the settings-only initializer defaults to Float32/non-interleaved,
+        // which forces an implicit internal conversion on every write() and crashes
+        // inside CoreAudio (ExtAudioFile/AudioConverter assertion) under real audio load.
+        audioFile = try AVAudioFile(
+            forWriting: sessionDirectory.appendingPathComponent("audio.wav"),
+            settings: audioTargetFormat.settings,
+            commonFormat: .pcmFormatInt16,
+            interleaved: true
+        )
 
         let inputNode = audioEngine.inputNode
         let inputFormat = inputNode.outputFormat(forBus: 0)
