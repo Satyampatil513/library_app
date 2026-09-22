@@ -46,15 +46,21 @@ long-term.
 
 ## Before you record
 
-Set your real upload endpoint in `RoomCapture/Uploader.swift`:
+Open the app, tap the gear icon (Settings), and set:
 
-```swift
-static let uploadURLString = "https://your-server.example.com/upload"
-```
+- **Upload server URL** — e.g. your server's Cloudflare/ngrok tunnel URL plus `/upload`
+  (`https://your-tunnel.trycloudflare.com/upload`). Tap **Test Connection** to confirm
+  it's reachable before recording — this catches a stale or mistyped URL immediately
+  instead of failing on the first real upload.
+- **Auth token** (optional) — must match the server's `UPLOAD_TOKEN` if it has one set.
+
+This is stored on-device (`UserDefaults`) and takes effect immediately, no rebuild
+needed — you don't have to touch source or reinstall the app when the tunnel URL
+changes (which a free Cloudflare/ngrok tunnel does on every restart). It defaults to
+the URL hardcoded in `Uploader.swift` if never set.
 
 The app does a `PUT` of a zipped session folder to that URL, with header
-`X-Session-Name: <folder name>`. Change the HTTP method/headers there if your
-server expects something else (e.g. multipart POST, auth token).
+`X-Session-Name: <folder name>` and (if set) `Authorization: Bearer <token>`.
 
 ## What the app captures (per the pipeline diagram, step 1)
 
@@ -88,7 +94,10 @@ server expects something else (e.g. multipart POST, auth token).
 - `SessionManager.swift` — Foundation-only. Lists/sizes/deletes session folders
   under the Documents directory, and checks free disk space.
 - `Uploader.swift` — Foundation-only. Zips a session folder (via
-  `NSFileCoordinator(.forUploading)`) and PUTs it to the hardcoded URL above.
+  `NSFileCoordinator(.forUploading)`) and PUTs it to the configured server URL
+  (see "Before you record").
+- `SettingsView.swift` — SwiftUI. The gear-icon screen: server URL/token fields
+  (`UserDefaults`, same keys `Uploader.swift` reads) and a Test Connection check.
 - `Models.swift` — shared Codable/plain structs used across the above.
 
 ## Session folder layout
