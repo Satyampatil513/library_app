@@ -1,0 +1,39 @@
+name: iOS Build Check
+
+# Compiles the app on every push, unsigned. This only verifies the code
+# builds — it does not produce an installable IPA. Once an Apple Developer
+# Program membership + signing secrets are set up, this can be extended with
+# an archive + TestFlight upload job.
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Select Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Generate Xcode project
+        run: xcodegen generate
+
+      - name: Build (unsigned, compile check only)
+        run: |
+          xcodebuild \
+            -project RoomCapture.xcodeproj \
+            -scheme RoomCapture \
+            -destination 'generic/platform=iOS' \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            build

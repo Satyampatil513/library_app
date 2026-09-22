@@ -1,0 +1,13 @@
+# Xcode project is generated from project.yml via XcodeGen (see README) — not checked in.
+*.xcodeproj/
+*.xcworkspace/
+
+.DS_Store
+xcuserdata/
+DerivedData/
+build/
+
+# Never commit signing material.
+*.p12
+*.mobileprovision
+*.cer
