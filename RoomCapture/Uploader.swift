@@ -33,6 +33,7 @@ enum Uploader {
 
         DispatchQueue.global(qos: .utility).async {
             var coordinatorError: NSError?
+            var copyError: Error?
             var preparedZipURL: URL?
 
             let coordinator = NSFileCoordinator()
@@ -45,12 +46,16 @@ enum Uploader {
                     try FileManager.default.copyItem(at: zipURL, to: tempURL)
                     preparedZipURL = tempURL
                 } catch {
-                    coordinatorError = error as NSError
+                    copyError = error
                 }
             }
 
             if let coordinatorError {
                 DispatchQueue.main.async { completion(.failure(coordinatorError)) }
+                return
+            }
+            if let copyError {
+                DispatchQueue.main.async { completion(.failure(copyError)) }
                 return
             }
             guard let zipFile = preparedZipURL, let endpoint = URL(string: uploadURLString) else {
