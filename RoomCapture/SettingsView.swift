@@ -18,7 +18,7 @@ struct SettingsView: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section("Upload server") {
+                Section {
                     TextField("https://your-tunnel-or-host/upload", text: $serverURL)
                         .keyboardType(.URL)
                         .textInputAutocapitalization(.never)
@@ -26,6 +26,8 @@ struct SettingsView: View {
                     SecureField("Auth token (optional, matches server's UPLOAD_TOKEN)", text: $token)
                         .textInputAutocapitalization(.never)
                         .autocorrectionDisabled()
+                } header: {
+                    Text("Upload server")
                 } footer: {
                     Text("This is where each Upload button sends a recorded session. A Cloudflare/ngrok tunnel URL changes every time that tunnel is restarted on the server side - paste the new one here, no rebuild needed.")
                 }
