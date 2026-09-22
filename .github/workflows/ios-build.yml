@@ -1,14 +1,15 @@
 name: iOS Build Check
 
-# Compiles the app on every push, unsigned. This only verifies the code
-# builds — it does not produce an installable IPA. Once an Apple Developer
-# Program membership + signing secrets are set up, this can be extended with
-# an archive + TestFlight upload job.
+# Compiles the app on every push, unsigned, and packages an unsigned .ipa as a
+# build artifact. That .ipa isn't installable as-is — a free Apple ID via
+# AltStore/Sideloadly (or a paid-account TestFlight pipeline later) does the
+# actual signing at install time, so no Apple Developer Program membership is
+# needed for this path.
 on:
   push:
-    branches: [main]
+    branches: [master]
   pull_request:
-    branches: [main]
+    branches: [master]
   workflow_dispatch:
 
 jobs:
@@ -28,12 +29,28 @@ jobs:
       - name: Generate Xcode project
         run: xcodegen generate
 
-      - name: Build (unsigned, compile check only)
+      - name: Build (unsigned)
         run: |
           xcodebuild \
             -project RoomCapture.xcodeproj \
             -scheme RoomCapture \
+            -configuration Release \
             -destination 'generic/platform=iOS' \
+            -derivedDataPath build \
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGNING_REQUIRED=NO \
             build
+
+      - name: Package unsigned IPA
+        run: |
+          APP_PATH="build/Build/Products/Release-iphoneos/RoomCapture.app"
+          mkdir -p Payload
+          cp -R "$APP_PATH" Payload/
+          zip -r RoomCapture-unsigned.ipa Payload
+
+      - name: Upload IPA artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: RoomCapture-unsigned-ipa
+          path: RoomCapture-unsigned.ipa
+          retention-days: 14
