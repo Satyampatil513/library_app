@@ -12,6 +12,9 @@ on:
     branches: [master]
   workflow_dispatch:
 
+permissions:
+  contents: write # needed to publish/update the "latest" release below
+
 jobs:
   build:
     runs-on: macos-14
@@ -54,3 +57,18 @@ jobs:
           name: RoomCapture-unsigned-ipa
           path: RoomCapture-unsigned.ipa
           retention-days: 14
+
+      # Overwrites a single rolling "latest" release on every push to master, so
+      # there's always one stable link to the newest build instead of having to
+      # dig through past Actions runs for the artifact.
+      - name: Publish "latest" release with the IPA
+        if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: latest
+          name: "Latest build"
+          body: |
+            Automated unsigned build from commit ${{ github.sha }}.
+            Sideload with Sideloadly or AltStore (free Apple ID) — see README.
+          prerelease: true
+          files: RoomCapture-unsigned.ipa

@@ -23,6 +23,27 @@ open RoomCapture.xcodeproj
 In Xcode: select your Team under Signing & Capabilities, plug in a LiDAR-equipped
 iPhone, and run.
 
+## Installing a build without a Mac or paid Apple Developer account
+
+`.github/workflows/ios-build.yml` builds the app **unsigned** on a macOS GitHub
+runner on every push to `master`, and publishes the resulting `.ipa` to a rolling
+[`latest` release](../../releases/tag/latest) — always the same link, overwritten
+each build. No Apple Developer Program membership is needed for this path; the
+signing happens on-device at install time instead:
+
+1. Download `RoomCapture-unsigned.ipa` from the `latest` release (repo access
+   required — send the file directly to whoever's installing it if they don't
+   have access to this repo).
+2. On the install machine: install [Sideloadly](https://sideloadly.io), plug in
+   the iPhone via USB, drag the `.ipa` in, sign in with a free Apple ID, hit Start.
+3. On the phone: Settings → General → VPN & Device Management → trust the
+   developer profile, then launch the app and allow the Camera/Microphone prompts.
+
+Apps signed this way with a free Apple ID expire after **7 days** — repeat step 2
+with a fresh (or the same) `.ipa` to keep it working. A paid Developer Program
+membership + TestFlight avoids that expiry if this needs to stay installed
+long-term.
+
 ## Before you record
 
 Set your real upload endpoint in `RoomCapture/Uploader.swift`:
