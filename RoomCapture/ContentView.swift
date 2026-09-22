@@ -312,6 +312,12 @@ struct ContentView: View {
                 }
                 .font(.caption)
                 .foregroundColor(.secondary)
+                if case .failed(let message) = uploadStates[session.id] ?? .idle {
+                    Text(message)
+                        .font(.caption2)
+                        .foregroundColor(.red)
+                        .lineLimit(2)
+                }
             }
             Spacer()
             uploadButton(for: session)

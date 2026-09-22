@@ -77,10 +77,12 @@ enum Uploader {
                 try? FileManager.default.removeItem(at: zipFile)
 
                 if let error {
+                    print("[Uploader] \(session.folderName) failed: \(error.localizedDescription)")
                     DispatchQueue.main.async { completion(.failure(error)) }
                     return
                 }
                 if let http = response as? HTTPURLResponse, !(200...299).contains(http.statusCode) {
+                    print("[Uploader] \(session.folderName) failed: server returned \(http.statusCode)")
                     DispatchQueue.main.async { completion(.failure(UploadError.serverError(http.statusCode))) }
                     return
                 }
